@@ -1,5 +1,5 @@
 export interface WhiskyPage {
-  name: string;
+  id: string;
   url: string;
   bottler: string;
 }

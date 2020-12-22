@@ -1,39 +1,40 @@
-import {JSDOM} from 'jsdom';
 import {axios} from '../axios';
 import {BOTTLERS} from '../constants';
-import {prependBaseURL, stripFormatting} from '../helper';
+import {database} from '../database';
+import {retrieveCorrectBaseURL, stripFormatting} from '../helper';
 import {Bottler} from '../model';
 
-const parseBottlers = (html: string) => {
-  const dom = new JSDOM(html);
-  const linkElements = dom.window.document.querySelectorAll(
+const parseBottlers = async (html: string) => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const linkElements = doc.querySelectorAll(
     'table[width="190"][bordercolor="#333333"][bgcolor="#000000"] > tbody > tr.textenormalgras > td > div[align="center"] > font > a'
   );
 
   const bottlers: Bottler[] = [];
 
   linkElements.forEach(linkElement => {
-    const url = prependBaseURL(linkElement.getAttribute('href'));
-    const name = stripFormatting(linkElement.textContent);
+    const url = retrieveCorrectBaseURL(linkElement.getAttribute('href'));
+    const id = stripFormatting(linkElement.textContent);
 
-    if (!name || !url) {
+    if (!id || !url) {
       return;
     }
 
     bottlers.push({
-      name,
+      id,
       url,
     });
   });
 
-  localStorage.setItem(BOTTLERS, JSON.stringify(bottlers));
+  await database.setItem(BOTTLERS, bottlers);
+
   return bottlers;
 };
 
 const grabBottlers = async () => {
   try {
     const response = await axios({method: 'GET'});
-    return parseBottlers(response.data);
+    return await parseBottlers(response.data);
   } catch (e) {
     console.info('failed to retrieve bottlers');
     console.error(e);
@@ -42,9 +43,6 @@ const grabBottlers = async () => {
 };
 
 export const loadBottlers = async () => {
-  const bottlers = localStorage.getItem(BOTTLERS);
-
-  return typeof bottlers === 'string'
-    ? (JSON.parse(bottlers) as Bottler[])
-    : await grabBottlers();
+  const bottlers = await database.getItem<Bottler[]>(BOTTLERS);
+  return bottlers ? bottlers : await grabBottlers();
 };

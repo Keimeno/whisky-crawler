@@ -1,13 +1,13 @@
-import {JSDOM} from 'jsdom';
 import {axios} from '../axios';
 import {WHISKY_PAGES} from '../constants';
-import {cleanURL, stripFormatting} from '../helper';
+import {database} from '../database';
+import {cleanURL, retrieveCorrectBaseURL, stripFormatting} from '../helper';
 import {Bottler, WhiskyPage} from '../model';
 
-const parseWhiskyPages = (html: string, bottler: Bottler): WhiskyPage[] => {
+const parseWhiskyPages = async (html: string, bottler: Bottler) => {
   try {
-    const dom = new JSDOM(html);
-    const whiskyPageElements = dom.window.document.querySelectorAll(
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const whiskyPageElements = doc.querySelectorAll(
       'table[width="540"][border="0"][align="center"][cellpadding="0"][cellspacing="0"] table[width="650"][border="0"][cellspacing="0"] tr[valign="top"] ul > li'
     );
 
@@ -29,16 +29,15 @@ const parseWhiskyPages = (html: string, bottler: Bottler): WhiskyPage[] => {
       }
 
       const internalWhiskyID = linkElement.textContent;
-      const url = cleanURL(linkElement.getAttribute('href'));
-      const name = uncutName.replace(` - ${internalWhiskyID}`, '');
+      const url = retrieveCorrectBaseURL(
+        cleanURL(linkElement.getAttribute('href'))
+      );
+      const id = uncutName.replace(` - ${internalWhiskyID}`, '');
 
-      whiskyPages.push({name, bottler: bottler.name, url});
+      whiskyPages.push({id, bottler: bottler.id, url});
     });
 
-    localStorage.setItem(
-      WHISKY_PAGES + bottler.name,
-      JSON.stringify(whiskyPages)
-    );
+    await database.setItem(WHISKY_PAGES + bottler.id, whiskyPages);
 
     return whiskyPages;
   } catch (e) {
@@ -51,7 +50,7 @@ const parseWhiskyPages = (html: string, bottler: Bottler): WhiskyPage[] => {
 const grabWhiskyPages = async (bottler: Bottler) => {
   try {
     const response = await axios.get(bottler.url);
-    return parseWhiskyPages(response.data, bottler);
+    return await parseWhiskyPages(response.data, bottler);
   } catch (e) {
     console.info('failed to retrieve whisky pages');
     console.error(e);
@@ -60,9 +59,9 @@ const grabWhiskyPages = async (bottler: Bottler) => {
 };
 
 export const loadWhiskyPages = async (bottler: Bottler) => {
-  const whiskyPages = localStorage.getItem(WHISKY_PAGES + bottler.name);
+  const whiskyPages = await database.getItem<WhiskyPage[]>(
+    WHISKY_PAGES + bottler.id
+  );
 
-  return typeof whiskyPages === 'string'
-    ? (JSON.parse(whiskyPages) as WhiskyPage[])
-    : await grabWhiskyPages(bottler);
+  return whiskyPages ? whiskyPages : await grabWhiskyPages(bottler);
 };
