@@ -1,4 +1,4 @@
 export interface Bottler {
-  id: string;
+  name: string;
   url: string;
 }

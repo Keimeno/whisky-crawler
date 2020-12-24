@@ -32,12 +32,12 @@ const parseWhiskyPages = async (html: string, bottler: Bottler) => {
       const url = retrieveCorrectBaseURL(
         cleanURL(linkElement.getAttribute('href'))
       );
-      const id = uncutName.replace(` - ${internalWhiskyID}`, '');
+      const name = uncutName.replace(` - ${internalWhiskyID}`, '');
 
-      whiskyPages.push({id, bottler: bottler.id, url});
+      whiskyPages.push({name, bottler: bottler.name, url});
     });
 
-    await database.setItem(WHISKY_PAGES + bottler.id, whiskyPages);
+    await database.setItem(WHISKY_PAGES + bottler.name, whiskyPages);
 
     return whiskyPages;
   } catch (e) {
@@ -60,7 +60,7 @@ const grabWhiskyPages = async (bottler: Bottler) => {
 
 export const loadWhiskyPages = async (bottler: Bottler) => {
   const whiskyPages = await database.getItem<WhiskyPage[]>(
-    WHISKY_PAGES + bottler.id
+    WHISKY_PAGES + bottler.name
   );
 
   return whiskyPages ? whiskyPages : await grabWhiskyPages(bottler);

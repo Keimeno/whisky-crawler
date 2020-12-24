@@ -1,0 +1,19 @@
+.Whisky {
+  @apply container max-w-xs py-6 mx-auto;
+}
+
+.Whisky .wrapper {
+  @apply rounded-lg bg-gray-800;
+}
+
+.Whisky .name {
+  @apply pt-4 pb-3 px-2 border-b border-gray-500;
+}
+
+.Whisky .highlight {
+  @apply font-bold;
+}
+
+.Whisky .description {
+  @apply p-4 text-sm;
+}

@@ -1,2 +1,6 @@
-export const stripFormatting = (input: string | null | undefined) =>
-  (input || '').replace(/\s+/g, ' ').trim();
+export const stripFormatting = (input: string) =>
+  input
+    .replaceAll('\n', '')
+    .split(' ')
+    .filter(e => e !== '')
+    .join(' ');

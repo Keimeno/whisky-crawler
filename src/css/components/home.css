@@ -1,0 +1,61 @@
+/* search */
+.Home .search {
+  @apply px-4 pb-2 pt-6 flex justify-center;
+}
+
+.Home .search input {
+  @apply w-3/4 bg-gray-700 h-10 px-2 rounded-l-md focus:outline-white;
+}
+
+.Home .search .button {
+  @apply w-1/4 rounded-r-md flex justify-center place-items-center font-bold bg-gray-700 text-center focus:outline-white;
+}
+
+/* whiskies */
+.Home .whiskies {
+  @apply px-4 pt-4 pb-2;
+}
+
+.Home .whisky {
+  @apply bg-gray-800 mb-3 rounded-md;
+}
+
+.Home .whisky .name {
+  @apply p-4 pb-2;
+}
+
+.Home .whisky .name .highlight {
+  @apply font-bold;
+}
+
+.Home .whisky .review {
+  @apply border-t border-gray-500;
+}
+
+.Home .whisky .review .button {
+  @apply py-2 w-full hover:bg-gray-500 transition rounded-b-md focus:outline-white;
+}
+
+/* pagination */
+.Home .pagination {
+  @apply flex justify-between mx-auto pb-5;
+  max-width: 240px;
+}
+
+.Home .pagination img {
+  @apply max-h-16;
+  filter: invert(1);
+}
+
+.Home .pagination span {
+  @apply text-5xl font-bold;
+  transform: translateY(0.325rem);
+}
+
+.Home .pagination img.inverted {
+  transform: scale(-1, -1);
+}
+
+.Home .pagination img.disabled {
+  filter: invert(1) opacity(0.3);
+}

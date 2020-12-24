@@ -14,14 +14,14 @@ const parseBottlers = async (html: string) => {
 
   linkElements.forEach(linkElement => {
     const url = retrieveCorrectBaseURL(linkElement.getAttribute('href'));
-    const id = stripFormatting(linkElement.textContent);
+    const name = stripFormatting(linkElement.textContent);
 
-    if (!id || !url) {
+    if (!name || !url) {
       return;
     }
 
     bottlers.push({
-      id,
+      name,
       url,
     });
   });

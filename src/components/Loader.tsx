@@ -1,6 +1,5 @@
-import React from 'react';
-import {loadBottlers, loadWhiskyPages} from '../grabber';
-import {WhiskyPage} from '../model';
+import React, {useEffect} from 'react';
+import {loadArchives} from '../grabber/grab-whisky';
 
 export interface LoaderProps {
   onLoad: (hasLoaded: boolean) => void;
@@ -8,22 +7,19 @@ export interface LoaderProps {
 
 export const Loader = (props: LoaderProps) => {
   const initialize = async () => {
-    // load bottlers
-    const bottlers = await loadBottlers();
-
-    // load whisky pages
-    const whiskyPages: WhiskyPage[] = [];
-
-    for (const bottler of bottlers) {
-      whiskyPages.push(...(await loadWhiskyPages(bottler)));
-    }
+    await loadArchives();
+    props.onLoad(true);
   };
 
-  initialize();
+  useEffect(() => {
+    initialize();
+  }, []);
 
   return (
-    <>
-      <p>Loading...</p>
-    </>
+    <div className="Loader">
+      <p></p>
+      <h2>Loading...</h2>
+      <p>This might take a while, do not close the app during this time.</p>
+    </div>
   );
 };
