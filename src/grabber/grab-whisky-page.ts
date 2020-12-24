@@ -21,7 +21,7 @@ const parseWhiskyPages = async (html: string, bottler: Bottler) => {
         return;
       }
 
-      const uncutName = stripFormatting(whiskyPageElement.textContent);
+      const uncutName = stripFormatting(whiskyPageElement.textContent!);
       const linkElement = whiskyPageElement.querySelector('a')!;
 
       if (!linkElement) {

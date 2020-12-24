@@ -14,7 +14,7 @@ const parseBottlers = async (html: string) => {
 
   linkElements.forEach(linkElement => {
     const url = retrieveCorrectBaseURL(linkElement.getAttribute('href'));
-    const name = stripFormatting(linkElement.textContent);
+    const name = stripFormatting(linkElement.textContent!);
 
     if (!name || !url) {
       return;
