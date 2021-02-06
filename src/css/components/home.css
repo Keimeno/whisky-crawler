@@ -13,7 +13,7 @@
 
 /* whiskies */
 .Home .whiskies {
-  @apply px-4 pt-4 pb-2;
+  @apply px-4 pt-4 pb-24;
 }
 
 .Home .whisky {
@@ -38,12 +38,16 @@
 
 /* pagination */
 .Home .pagination {
-  @apply flex justify-between mx-auto pb-5;
+  @apply bg-gray-900 flex justify-center pb-5 pt-3 fixed left-0 right-0 bottom-0 z-10;
+}
+
+.Home .pagination .items {
+  @apply flex justify-between w-full;
   max-width: 240px;
 }
 
 .Home .pagination img {
-  @apply max-h-16;
+  @apply max-h-16 cursor-pointer;
   filter: invert(1);
 }
 
@@ -57,5 +61,6 @@
 }
 
 .Home .pagination img.disabled {
+  @apply cursor-default;
   filter: invert(1) opacity(0.3);
 }

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {whiskyStore} from '../store';
+import {homeStore, whiskyStore} from '../store';
 import {observer} from 'mobx-react-lite';
 import caretRight from '../assets/caret-right.svg';
 import classNames from 'classnames';
@@ -10,26 +10,30 @@ import {filterHighlightablePart} from '../helper';
 const AMOUNT = 10;
 
 export const Home = observer(() => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [query, setQuery] = useState('');
   const [submittedCount, setSubmittedCount] = useState(0);
 
   useEffect(() => {
-    whiskyStore.loadWhiskies({page: currentPage, amount: AMOUNT, query});
-  }, [currentPage, submittedCount]);
+    whiskyStore.loadWhiskies({
+      page: homeStore.currentPage,
+      amount: AMOUNT,
+      query: homeStore.query,
+    });
+  }, [homeStore.currentPage, submittedCount]);
+
+  const submit = () => {
+    homeStore.currentPage = 0;
+    setSubmittedCount(submittedCount + 1);
+  };
 
   const renderSearch = () => (
     <>
       <input
-        value={query}
-        onChange={e => setQuery(e.target.value)}
+        value={homeStore.query}
+        onChange={e => (homeStore.query = e.target.value)}
         type="text"
         id="whisky-search"
       />
-      <button
-        onClick={() => setSubmittedCount(submittedCount + 1)}
-        className="button"
-      >
+      <button onClick={submit} className="button">
         Search
       </button>
     </>
@@ -48,17 +52,19 @@ export const Home = observer(() => {
     ));
 
   const renderPagination = () => (
-    <>
+    <div className="items">
       <img
-        className={classNames('inverted', {disabled: currentPage === 0})}
+        className={classNames('inverted', {
+          disabled: homeStore.currentPage === 0,
+        })}
         src={caretRight}
         onClick={() =>
-          currentPage !== 0 ? setCurrentPage(currentPage - 1) : ''
+          homeStore.currentPage !== 0 ? (homeStore.currentPage -= 1) : ''
         }
       />
-      <span>{currentPage + 1}</span>
-      <img onClick={() => setCurrentPage(currentPage + 1)} src={caretRight} />
-    </>
+      <span>{homeStore.currentPage + 1}</span>
+      <img onClick={() => (homeStore.currentPage += 1)} src={caretRight} />
+    </div>
   );
 
   return (
