@@ -12,6 +12,7 @@ import {axios} from '../axios';
 import {cleanURL, stripFormatting} from '../helper';
 import {WhiskyIndex} from '../model';
 import {StoredWhisky, Whisky} from '../model/whisky';
+import {cloneDeep} from 'lodash';
 
 const SCHEMA_1_CLASS = 'Textenormal';
 const SCHEMA_2_CLASS = 'TextenormalNEW';
@@ -37,23 +38,25 @@ const titleBlacklist = [
 ];
 
 const extractText = (element: Element | null) => {
-  if (element === null || element.textContent === null) {
+  if (element === null) {
+    return null;
+  }
+
+  if (element.textContent === null || element.textContent === undefined) {
     return null;
   }
 
   return stripFormatting(element.textContent);
 };
 
-const grabSchema1Entry = (doc: Document) => {};
-
 export const convertToBase64 = (input: string) =>
   btoa(unescape(encodeURIComponent(input)));
 
 const selectorWithText = (element: Element, ...classes: string[]) =>
   classes
-    .map(clazz => element.querySelector('.' + clazz))
+    .map(clazz => element.getElementsByClassName(clazz)[0])
     .find(selected => {
-      if (selected === null) {
+      if (selected === undefined) {
         return false;
       }
 
@@ -83,6 +86,22 @@ const grabTitle = (element: Element) => {
     SCHEMA_2_TITLE_CLASS,
     SCHEMA_1_TITLE_CLASS
   );
+
+  const title = extractText(titleElement);
+
+  const isBlacklisted = titleBlacklist.some(blacklisted =>
+    title?.toLowerCase().includes(blacklisted)
+  );
+
+  if (isBlacklisted) {
+    // console.log(title + ' is blacklisted');
+  }
+
+  return isBlacklisted ? null : title;
+};
+
+const grabSchema1Title = (element: Element) => {
+  const titleElement = selectorWithText(element, SCHEMA_1_TITLE_CLASS);
 
   const title = extractText(titleElement);
 
@@ -138,7 +157,7 @@ const schemaStandardProcedure = async (itemElement: Element) => {
   } else if (!description) {
     // console.log('trying alternate procedure');
     // supplying the title, so we don't have to refetch it.
-    return schemaAlternateProcedure(itemElement);
+    return; // schemaAlternateProcedure(itemElement);
   }
 
   // items.push({
@@ -149,6 +168,73 @@ const schemaStandardProcedure = async (itemElement: Element) => {
   await storeWhisky(title, description);
   totalCount++;
   return;
+};
+
+const schema1AlternateProcedure = async (itemElement: Element) => {
+  // console.log('matches standard procedure');
+  const title = grabSchema1Title(itemElement);
+
+  const elementWithoutChildren = cloneDeep(itemElement);
+
+  while (elementWithoutChildren.lastElementChild) {
+    elementWithoutChildren.removeChild(elementWithoutChildren.lastElementChild);
+  }
+  console.log(elementWithoutChildren);
+  const description = extractText(elementWithoutChildren);
+
+  if (!title) {
+    // console.log('definetely not working, we can skip this one');
+    return;
+  } else if (!description) {
+    // console.log('trying alternate procedure');
+    // supplying the title, so we don't have to refetch it.
+    return; // schemaAlternateProcedure(itemElement);
+  }
+
+  await storeWhisky(title, description);
+  totalCount++;
+  return;
+};
+
+const schema1StandardProcedure = async (itemElement: Element) => {
+  // console.log('matches standard procedure');
+  const title = grabSchema1Title(itemElement);
+
+  const descriptionElement = selectorWithText(itemElement, SCHEMA_1_CLASS);
+
+  const description = extractText(descriptionElement);
+
+  if (!title) {
+    // console.log('definetely not working, we can skip this one');
+    return;
+  } else if (!description) {
+    // console.log('trying alternate procedure');
+    // supplying the title, so we don't have to refetch it.
+    return; // schemaAlternateProcedure(itemElement);
+  }
+
+  await storeWhisky(title, description);
+  totalCount++;
+  return;
+};
+
+const grabSchema1Entry = async (doc: Document) => {
+  const containerQuery =
+    'table[width="540"][border="0"][align="center"][cellpadding="0"][cellspacing="0"] > tbody > tr > td[width="500"][rowspan="2"][valign="top"]';
+  const itemContainerQuery =
+    'table[width="500"][border="0"] > tbody > tr > td[valign="top"]';
+
+  const itemContainers = doc.querySelectorAll(
+    containerQuery + ' ' + itemContainerQuery
+  );
+
+  for (const itemContainer of itemContainers) {
+    if (!itemContainer.classList.contains(SCHEMA_1_CLASS)) {
+      await schema1AlternateProcedure(itemContainer);
+    } else {
+      await schema1StandardProcedure(itemContainer);
+    }
+  }
 };
 
 const grabSchemaEntry = async (doc: Document) => {
@@ -170,16 +256,13 @@ const grabSchemaEntry = async (doc: Document) => {
   }
 };
 
-let schema2Grabbed = false;
-
 const grabWhiskies = async (doc: Document, age: Moment) => {
   if (age.unix() - PWSSchemaBreakpoint.Untargeted < 0) {
     return;
   } else if (age.unix() - PWSSchemaBreakpoint.Schema1 < 0) {
-    grabSchema1Entry(doc);
+    await grabSchema1Entry(doc);
   } else {
     await grabSchemaEntry(doc);
-    schema2Grabbed = true;
   }
 };
 

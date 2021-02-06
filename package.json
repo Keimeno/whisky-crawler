@@ -14,6 +14,7 @@
   "devDependencies": {
     "@tailwindcss/postcss7-compat": "^2.0.2",
     "@types/classnames": "^2.2.11",
+    "@types/lodash": "^4.14.166",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.6",
@@ -26,6 +27,7 @@
     "stylelint-prettier": "^1.1.2",
     "typescript": "^4.1.2",
     "vite": "^1.0.0-rc.13",
+    "vite-plugin-pwa": "^0.1.7",
     "vite-plugin-react": "^4.0.0"
   },
   "dependencies": {
@@ -33,6 +35,7 @@
     "classnames": "^2.2.6",
     "fuse.js": "^6.4.3",
     "localforage": "^1.9.0",
+    "lodash": "^4.17.20",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "moment": "^2.29.1",
